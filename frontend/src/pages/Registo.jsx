@@ -16,7 +16,6 @@ export default function Registo() {
     }
 
     setErro("");
-    // Por agora só mostra na consola. Mais tarde ligamos à API.
     console.log("Registo:", { nome, email, password });
   }
 
@@ -32,7 +31,7 @@ export default function Registo() {
           </p>
         </div>
         <p className="auth-painel-rodape">
-          📍 Mais perto da sua localidade. Todos os dias.
+          Mais perto da sua localidade. Todos os dias.
         </p>
       </aside>
 

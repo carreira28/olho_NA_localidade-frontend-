@@ -7,7 +7,6 @@ export default function Login() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    // Por agora só mostra na consola. Mais tarde ligamos à API.
     console.log("Login:", { email, password });
   }
 
@@ -23,7 +22,7 @@ export default function Login() {
           </p>
         </div>
         <p className="auth-painel-rodape">
-          📍 Mais perto da sua localidade. Todos os dias.
+          Mais perto da sua localidade. Todos os dias.
         </p>
       </aside>
 
@@ -40,7 +39,6 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@exemplo.com"
               required
             />
 
@@ -50,7 +48,6 @@ export default function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••••••"
               required
             />
 
