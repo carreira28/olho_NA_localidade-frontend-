@@ -66,10 +66,18 @@ export default function Registo() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+<<<<<<< HEAD
+=======
+              placeholder="******"
+>>>>>>> cd7881cf5006ff091b9f58636076572a660c5e20
               required
             />
 
-            {erro && <p className="auth-erro" role="alert">{erro}</p>}
+            {erro && (
+              <p className="auth-erro" role="alert">
+                {erro}
+              </p>
+            )}
 
             <button type="submit" className="btn-auth">
               <span aria-hidden="true">+</span> Criar conta

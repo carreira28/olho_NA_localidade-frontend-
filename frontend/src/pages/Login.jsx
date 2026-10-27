@@ -68,7 +68,9 @@ export default function Login() {
         <div className="auth-form">
           <p className="auth-etiqueta">Bem-vindo ao Olho na Localidade</p>
           <h2>Bem-vindo de volta</h2>
-          <p className="auth-sub">Inicie sessão para consultar as suas ocorrências.</p>
+          <p className="auth-sub">
+            Inicie sessão para consultar as suas ocorrências.
+          </p>
 
           <form onSubmit={handleSubmit}>
             <label htmlFor="email">E-mail</label>
@@ -87,7 +89,11 @@ export default function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+<<<<<<< HEAD
               placeholder="••••••••••••"
+=======
+              placeholder="******"
+>>>>>>> cd7881cf5006ff091b9f58636076572a660c5e20
               required
             />
 
