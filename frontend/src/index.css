@@ -19,7 +19,7 @@ body {
   background: white;
 }
 
-/* Layout dividido: painel + formulário */
+/* ---------- Login e Criar conta ---------- */
 .auth {
   min-height: 100vh;
   display: grid;
@@ -75,7 +75,6 @@ body {
   font-size: 0.9rem;
 }
 
-/* Lado do formulário */
 .auth-form-lado {
   display: flex;
   align-items: center;
@@ -119,7 +118,8 @@ body {
   margin-bottom: 0.45rem;
 }
 
-.auth-form input {
+.auth-form input,
+.auth-form select {
   padding: 0.8rem 0.9rem;
   margin-bottom: 1.2rem;
   border: 1px solid var(--borda);
@@ -127,13 +127,15 @@ body {
   font-size: 0.95rem;
   font-family: inherit;
   color: var(--azul-escuro);
+  background: white;
 }
 
 .auth-form input::placeholder {
   color: #9aa6b0;
 }
 
-.auth-form input:focus {
+.auth-form input:focus,
+.auth-form select:focus {
   outline: 2px solid var(--verde-agua);
   border-color: transparent;
 }
@@ -185,7 +187,155 @@ body {
   text-decoration: underline;
 }
 
-/* Telemóvel e tablet: o painel passa para cima */
+/* ---------- Home (com sessão iniciada) ---------- */
+.painel {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  background: #f4f7f9;
+}
+
+.painel-lateral {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem 1rem;
+  background: white;
+  border-right: 1px solid var(--borda);
+}
+
+.painel-marca {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.painel-area {
+  font-size: 0.75rem;
+  color: var(--cinza-texto);
+  margin-bottom: 1.5rem;
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.7rem 0.8rem;
+  margin-bottom: 0.3rem;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--azul-escuro);
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: #eef3f5;
+}
+
+.menu-item.ativo {
+  background: #dff1ee;
+  color: var(--verde-agua);
+}
+
+.painel-conteudo {
+  padding: 2rem;
+  overflow-x: auto;
+}
+
+.painel-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.painel-topo h2 {
+  font-size: 1.6rem;
+}
+
+.painel-sub {
+  color: var(--cinza-texto);
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+}
+
+.btn-pequeno {
+  padding: 0.6rem 1rem;
+  white-space: nowrap;
+}
+
+.cartao {
+  background: white;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 1.2rem;
+}
+
+.estatisticas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.estatisticas p {
+  color: var(--cinza-texto);
+  font-size: 0.85rem;
+}
+
+.estatisticas strong {
+  font-size: 1.8rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th {
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: var(--cinza-texto);
+  padding: 0.6rem;
+  border-bottom: 1px solid var(--borda);
+}
+
+td {
+  padding: 0.9rem 0.6rem;
+  border-bottom: 1px solid var(--borda);
+}
+
+td small {
+  color: var(--cinza-texto);
+}
+
+.link-acao {
+  color: var(--verde-agua);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.chip {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.chip-aviso { background: #fef0c7; color: #93370d; }
+.chip-ok { background: #d1fadf; color: #05603a; }
+.chip-erro { background: #fee4e2; color: #b42318; }
+.chip-info { background: #d1e9ff; color: #1849a9; }
+.chip-neutro { background: #eaecf0; color: #475467; }
+
+/* ---------- Telemóvel e tablet ---------- */
 @media (max-width: 800px) {
   .auth {
     grid-template-columns: 1fr;
@@ -203,5 +353,18 @@ body {
   .auth-painel-texto,
   .auth-painel-rodape {
     display: none;
+  }
+
+  .painel {
+    grid-template-columns: 1fr;
+  }
+
+  .painel-lateral {
+    border-right: none;
+    border-bottom: 1px solid var(--borda);
+  }
+
+  .estatisticas {
+    grid-template-columns: 1fr;
   }
 }

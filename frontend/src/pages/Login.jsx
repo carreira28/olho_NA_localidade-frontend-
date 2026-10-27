@@ -1,13 +1,51 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
+/* TEMPORÁRIO: simula a base de dados.
+   Quando houver API, apaga isto e usa o fetch em baixo. */
+const UTILIZADORES_TESTE = [
+  { email: "cidadao@teste.pt", password: "123456", perfil: "cidadao" },
+  { email: "admin@teste.pt", password: "123456", perfil: "administrador" },
+  { email: "funcionario@teste.pt", password: "123456", perfil: "funcionario" },
+];
+
+async function iniciarSessao(email, password) {
+  // --- Versão simulada ---
+  const utilizador = UTILIZADORES_TESTE.find(
+    (u) => u.email === email && u.password === password
+  );
+  if (!utilizador) {
+    throw new Error("E-mail ou palavra-passe incorretos.");
+  }
+  return { perfil: utilizador.perfil };
+
+  // --- Versão com API (para usar mais tarde) ---
+  // const resposta = await fetch("http://localhost:3000/api/auth/login", {
+  //   method: "POST",
+  //   headers: { "Content-Type": "application/json" },
+  //   body: JSON.stringify({ email, password }),
+  // });
+  // if (!resposta.ok) throw new Error("E-mail ou palavra-passe incorretos.");
+  // return await resposta.json(); // tem de devolver { perfil: "cidadao" | "administrador" | "funcionario" }
+}
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [erro, setErro] = useState("");
+  const navigate = useNavigate();
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    console.log("Login:", { email, password });
+    setErro("");
+
+    try {
+      const { perfil } = await iniciarSessao(email, password);
+      localStorage.setItem("perfil", perfil);
+      navigate("/home");
+    } catch (err) {
+      setErro(err.message);
+    }
   }
 
   return (
@@ -22,7 +60,7 @@ export default function Login() {
           </p>
         </div>
         <p className="auth-painel-rodape">
-          Mais perto da sua localidade. Todos os dias.
+          📍 Mais perto da sua localidade. Todos os dias.
         </p>
       </aside>
 
@@ -39,6 +77,7 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="email@exemplo.com"
               required
             />
 
@@ -48,8 +87,11 @@ export default function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••••••"
               required
             />
+
+            {erro && <p className="auth-erro" role="alert">{erro}</p>}
 
             <button type="submit" className="btn-auth">
               <span aria-hidden="true">→</span> Iniciar sessão

@@ -48,7 +48,6 @@ export default function Registo() {
               type="text"
               value={nome}
               onChange={(e) => setNome(e.target.value)}
-              placeholder="O seu nome"
               required
             />
 
@@ -58,7 +57,6 @@ export default function Registo() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@exemplo.com"
               required
             />
 
@@ -68,7 +66,6 @@ export default function Registo() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo 6 caracteres"
               required
             />
 
