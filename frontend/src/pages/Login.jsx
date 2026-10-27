@@ -35,7 +35,7 @@ export default function Login() {
       localStorage.setItem("token", dados.token);
       localStorage.setItem("perfil", perfil);
       localStorage.setItem("utilizador", JSON.stringify(dados.utilizador));
-      navigate("/home");
+      navigate("/OcorrenciasCidadao");
     } catch (err) {
       setErro(err.message);
     }
@@ -61,7 +61,9 @@ export default function Login() {
         <div className="auth-form">
           <p className="auth-etiqueta">Bem-vindo ao Olho na Localidade</p>
           <h2>Bem-vindo de volta</h2>
-          <p className="auth-sub">Inicie sessão para consultar as suas ocorrências.</p>
+          <p className="auth-sub">
+            Inicie sessão para consultar as suas ocorrências.
+          </p>
 
           <form onSubmit={handleSubmit}>
             <label htmlFor="email">E-mail</label>
@@ -84,7 +86,11 @@ export default function Login() {
               required
             />
 
-            {erro && <p className="auth-erro" role="alert">{erro}</p>}
+            {erro && (
+              <p className="auth-erro" role="alert">
+                {erro}
+              </p>
+            )}
 
             <button type="submit" className="btn-auth">
               <span aria-hidden="true">→</span> Iniciar sessão
