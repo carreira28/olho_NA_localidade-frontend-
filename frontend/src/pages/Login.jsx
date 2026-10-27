@@ -1,32 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { api } from "../api";
 
-/* TEMPORÁRIO: simula a base de dados.
-   Quando houver API, apaga isto e usa o fetch em baixo. */
-const UTILIZADORES_TESTE = [
-  { email: "cidadao@teste.pt", password: "123456", perfil: "cidadao" },
-  { email: "admin@teste.pt", password: "123456", perfil: "administrador" },
-  { email: "funcionario@teste.pt", password: "123456", perfil: "funcionario" },
-];
-
-async function iniciarSessao(email, password) {
-  // --- Versão simulada ---
-  const utilizador = UTILIZADORES_TESTE.find(
-    (u) => u.email === email && u.password === password
-  );
-  if (!utilizador) {
-    throw new Error("E-mail ou palavra-passe incorretos.");
-  }
-  return { perfil: utilizador.perfil };
-
-  // --- Versão com API (para usar mais tarde) ---
-  // const resposta = await fetch("http://localhost:3000/api/auth/login", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify({ email, password }),
-  // });
-  // if (!resposta.ok) throw new Error("E-mail ou palavra-passe incorretos.");
-  // return await resposta.json(); // tem de devolver { perfil: "cidadao" | "administrador" | "funcionario" }
+// Converte a resposta do backend num dos 3 perfis do frontend
+function obterPerfil(utilizador) {
+  if (utilizador.tipo === "cidadao") return "cidadao";
+  if (utilizador.perfil === "ADMINISTRADOR") return "administrador";
+  if (utilizador.perfil === "FUNCIONARIO MUNICIPAL") return "funcionario";
+  return null;
 }
 
 export default function Login() {
@@ -40,8 +21,20 @@ export default function Login() {
     setErro("");
 
     try {
-      const { perfil } = await iniciarSessao(email, password);
+      const dados = await api("/auth/signin", {
+        method: "POST",
+        body: { email, password },
+      });
+
+      const perfil = obterPerfil(dados.utilizador);
+      if (!perfil) {
+        setErro("Tipo de utilizador desconhecido.");
+        return;
+      }
+
+      localStorage.setItem("token", dados.token);
       localStorage.setItem("perfil", perfil);
+      localStorage.setItem("utilizador", JSON.stringify(dados.utilizador));
       navigate("/home");
     } catch (err) {
       setErro(err.message);
@@ -68,9 +61,7 @@ export default function Login() {
         <div className="auth-form">
           <p className="auth-etiqueta">Bem-vindo ao Olho na Localidade</p>
           <h2>Bem-vindo de volta</h2>
-          <p className="auth-sub">
-            Inicie sessão para consultar as suas ocorrências.
-          </p>
+          <p className="auth-sub">Inicie sessão para consultar as suas ocorrências.</p>
 
           <form onSubmit={handleSubmit}>
             <label htmlFor="email">E-mail</label>
@@ -89,11 +80,7 @@ export default function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-<<<<<<< HEAD
               placeholder="••••••••••••"
-=======
-              placeholder="******"
->>>>>>> cd7881cf5006ff091b9f58636076572a660c5e20
               required
             />
 

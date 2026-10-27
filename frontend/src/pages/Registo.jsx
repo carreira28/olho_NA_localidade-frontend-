@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { api } from "../api";
 
 export default function Registo() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [erro, setErro] = useState("");
+  const navigate = useNavigate();
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     if (password.length < 6) {
@@ -15,8 +17,16 @@ export default function Registo() {
       return;
     }
 
-    setErro("");
-    console.log("Registo:", { nome, email, password });
+    try {
+      setErro("");
+      await api("/auth/signup", {
+        method: "POST",
+        body: { nome, email, password },
+      });
+      navigate("/login");
+    } catch (err) {
+      setErro(err.message);
+    }
   }
 
   return (
@@ -66,18 +76,10 @@ export default function Registo() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-<<<<<<< HEAD
-=======
-              placeholder="******"
->>>>>>> cd7881cf5006ff091b9f58636076572a660c5e20
               required
             />
 
-            {erro && (
-              <p className="auth-erro" role="alert">
-                {erro}
-              </p>
-            )}
+            {erro && <p className="auth-erro" role="alert">{erro}</p>}
 
             <button type="submit" className="btn-auth">
               <span aria-hidden="true">+</span> Criar conta

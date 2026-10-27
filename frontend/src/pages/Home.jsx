@@ -1,225 +1,208 @@
+import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { api } from "../api";
+import BarraLateral from "../components/BarraLateral.jsx";
+import BarraTopo from "../components/BarraTopo.jsx";
+import Chip from "../components/Chip.jsx";
+import { lerUtilizador, terminarSessao } from "../utils/sessao.js";
 
-const MENUS = {
-  cidadao: ["As minhas ocorrências", "Reportar ocorrência"],
-  administrador: ["Todas as ocorrências", "Categorias", "Utilizadores", "Departamentos"],
-  funcionario: ["Ocorrências do departamento"],
-};
+/* ---------- Funções auxiliares ---------- */
+function normalizar(texto) {
+  return String(texto)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
 
-const NOMES = {
-  cidadao: "Área do cidadão",
-  administrador: "Área de administração",
-  funcionario: "Área do funcionário",
-};
-
-/* Estrutura comum: barra lateral + conteúdo */
-function Painel({ perfil, children }) {
-  const navigate = useNavigate();
-
-  function terminarSessao() {
-    localStorage.removeItem("perfil");
-    navigate("/login");
+function primeiroTexto(obj) {
+  if (!obj || typeof obj !== "object") return "";
+  for (const [chave, valor] of Object.entries(obj)) {
+    if (typeof valor === "string" && !chave.startsWith("id") && !chave.includes("data")) {
+      return valor;
+    }
   }
+  return "";
+}
+
+function estadoPor(ocorrencia, palavra) {
+  const entrada = (ocorrencia.historicoEstados ?? []).find((h) =>
+    normalizar(primeiroTexto(h.estado?.tipo)).includes(palavra)
+  );
+  return entrada ? primeiroTexto(entrada.estado) : "";
+}
+
+function formatarData(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return "";
+  const mes = d.toLocaleDateString("pt-PT", { month: "short" }).replace(".", "");
+  return `${String(d.getDate()).padStart(2, "0")} ${mes}. ${d.getFullYear()}`;
+}
+
+function prepararLinhas(ocorrencias) {
+  return ocorrencias.map((o) => ({
+    id: o.id_problema ?? o.id,
+    titulo: o.titulo ?? o.nome ?? o.descricao ?? "Sem título",
+    categoria: primeiroTexto(o.categoria) || "—",
+    data: formatarData(o.data_criacao),
+    validacao: estadoPor(o, "valid") || "—",
+    resolucao: estadoPor(o, "resol") || "Não iniciada",
+  }));
+}
+
+function PaginaCidadao() {
+  const navigate = useNavigate();
+  const utilizador = lerUtilizador();
+
+  const [linhas, setLinhas] = useState([]);
+  const [aCarregar, setACarregar] = useState(true);
+  const [erro, setErro] = useState("");
+  const [filtroValidacao, setFiltroValidacao] = useState("");
+  const [filtroCategoria, setFiltroCategoria] = useState("");
+
+  useEffect(() => {
+    api("/api/problemas")
+      .then((dados) => {
+        console.log("Problemas recebidos:", dados);
+        setLinhas(prepararLinhas(dados));
+      })
+      .catch((err) => {
+        if (err.status === 401) {
+          terminarSessao(navigate); // sessão expirada
+          return;
+        }
+        setErro(err.message);
+      })
+      .finally(() => setACarregar(false));
+  }, [navigate]);
+
+  const validacoes = [...new Set(linhas.map((l) => l.validacao))];
+  const categorias = [...new Set(linhas.map((l) => l.categoria))];
+
+  const visiveis = linhas.filter(
+    (l) =>
+      (!filtroValidacao || l.validacao === filtroValidacao) &&
+      (!filtroCategoria || l.categoria === filtroCategoria)
+  );
 
   return (
     <div className="painel">
-      <aside className="painel-lateral">
-        <div>
-          <p className="painel-marca">Olho na Localidade</p>
-          <p className="painel-area">{NOMES[perfil]}</p>
-          <nav>
-            {MENUS[perfil].map((item, i) => (
-              <button
-                key={item}
-                className={i === 0 ? "menu-item ativo" : "menu-item"}
-              >
-                {item}
-              </button>
-            ))}
-          </nav>
-        </div>
-        <button className="menu-item" onClick={terminarSessao}>
-          Terminar sessão
-        </button>
-      </aside>
+      <BarraLateral />
 
-      <main className="painel-conteudo">{children}</main>
+      <div className="painel-principal">
+        <BarraTopo />
+
+        <main className="painel-conteudo">
+          <div className="painel-topo">
+            <div>
+              <h2>As minhas ocorrências</h2>
+              <p className="painel-sub">
+                Olá, {utilizador.nome}. Acompanhe as suas ocorrências e
+                contribua para um concelho melhor.
+              </p>
+            </div>
+            <button className="btn-auth btn-pequeno">+ Reportar ocorrência</button>
+          </div>
+
+          <div className="cartao">
+            <h3 className="cartao-titulo">Os seus pedidos</h3>
+
+            <div className="filtros">
+              <div>
+                <label htmlFor="f-validacao">Validação</label>
+                <select
+                  id="f-validacao"
+                  value={filtroValidacao}
+                  onChange={(e) => setFiltroValidacao(e.target.value)}
+                >
+                  <option value="">Todos os estados</option>
+                  {validacoes.map((v) => (
+                    <option key={v} value={v}>{v}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="f-categoria">Categoria</label>
+                <select
+                  id="f-categoria"
+                  value={filtroCategoria}
+                  onChange={(e) => setFiltroCategoria(e.target.value)}
+                >
+                  <option value="">Todas as categorias</option>
+                  {categorias.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {aCarregar && <p className="mensagem-tabela">A carregar...</p>}
+            {erro && <p className="auth-erro" role="alert">{erro}</p>}
+            {!aCarregar && !erro && visiveis.length === 0 && (
+              <p className="mensagem-tabela">Não há ocorrências para mostrar.</p>
+            )}
+
+            {visiveis.length > 0 && (
+              <table className="tabela">
+                <thead>
+                  <tr>
+                    <th>Ocorrências</th>
+                    <th>Validação</th>
+                    <th>Resolução</th>
+                    <th>Ação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visiveis.map((l) => (
+                    <tr key={l.id}>
+                      <td>
+                        <strong>{l.titulo}</strong>
+                        <div className="sub-linha">{l.categoria}</div>
+                        <div className="sub-linha">{l.data}</div>
+                      </td>
+                      <td>
+                        <div className="estado-celula">
+                          <small>Validação</small>
+                          <Chip texto={l.validacao} />
+                        </div>
+                      </td>
+                      <td>
+                        <div className="estado-celula">
+                          <small>Resolução</small>
+                          <Chip texto={l.resolucao} />
+                        </div>
+                      </td>
+                      <td>
+                        <button className="btn-contorno">Ver detalhes</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
 
-function Chip({ texto }) {
-  const tipo =
-    {
-      Pendente: "aviso",
-      Validada: "ok",
-      Rejeitada: "erro",
-      "Em curso": "info",
-      Concluída: "ok",
-      "Não iniciada": "neutro",
-    }[texto] || "neutro";
-  return <span className={`chip chip-${tipo}`}>{texto}</span>;
-}
-
-/* ---------- CIDADÃO ---------- */
-function HomeCidadao() {
-  const ocorrencias = [
-    { titulo: "Pavimento degradado", data: "12 abr. 2026", validacao: "Pendente", resolucao: "Não iniciada" },
-    { titulo: "Candeeiro sem iluminação", data: "11 abr. 2026", validacao: "Validada", resolucao: "Em curso" },
-    { titulo: "Resíduos junto aos contentores", data: "08 abr. 2026", validacao: "Rejeitada", resolucao: "Não iniciada" },
-  ];
-
-  return (
-    <>
-      <div className="painel-topo">
-        <div>
-          <h2>As minhas ocorrências</h2>
-          <p className="painel-sub">Acompanhe os seus reportes e o estado de cada um.</p>
-        </div>
-        <button className="btn-auth btn-pequeno">+ Reportar ocorrência</button>
-      </div>
-
-      <div className="cartao">
-        <table>
-          <thead>
-            <tr>
-              <th>Ocorrência</th>
-              <th>Validação</th>
-              <th>Resolução</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {ocorrencias.map((o) => (
-              <tr key={o.titulo}>
-                <td>
-                  <strong>{o.titulo}</strong>
-                  <br />
-                  <small>{o.data}</small>
-                </td>
-                <td><Chip texto={o.validacao} /></td>
-                <td><Chip texto={o.resolucao} /></td>
-                <td><a href="#" className="link-acao">Ver detalhes</a></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </>
-  );
-}
-
-/* ---------- ADMINISTRADOR ---------- */
-function HomeAdmin() {
-  const ocorrencias = [
-    { titulo: "Pavimento degradado", categoria: "Pavimentos", data: "12 abr. 2026", validacao: "Pendente" },
-    { titulo: "Buraco na faixa de rodagem", categoria: "Pavimentos", data: "11 abr. 2026", validacao: "Validada" },
-    { titulo: "Candeeiro sem iluminação", categoria: "Iluminação", data: "09 abr. 2026", validacao: "Validada" },
-    { titulo: "Resíduos junto aos contentores", categoria: "Resíduos", data: "08 abr. 2026", validacao: "Rejeitada" },
-  ];
-
-  return (
-    <>
-      <div className="painel-topo">
-        <div>
-          <h2>Todas as ocorrências</h2>
-          <p className="painel-sub">Gestão e validação das ocorrências submetidas.</p>
-        </div>
-      </div>
-
-      <div className="estatisticas">
-        <div className="cartao"><p>Total de ocorrências</p><strong>4</strong></div>
-        <div className="cartao"><p>Pendentes de validação</p><strong>1</strong></div>
-        <div className="cartao"><p>Rejeitadas</p><strong>1</strong></div>
-      </div>
-
-      <div className="cartao">
-        <table>
-          <thead>
-            <tr>
-              <th>Ocorrência</th>
-              <th>Categoria</th>
-              <th>Submissão</th>
-              <th>Validação</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {ocorrencias.map((o) => (
-              <tr key={o.titulo}>
-                <td><strong>{o.titulo}</strong></td>
-                <td>{o.categoria}</td>
-                <td>{o.data}</td>
-                <td><Chip texto={o.validacao} /></td>
-                <td><a href="#" className="link-acao">Ver detalhes</a></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </>
-  );
-}
-
-/* ---------- FUNCIONÁRIO ---------- */
-function HomeFuncionario() {
-  const ocorrencias = [
-    { titulo: "Candeeiro sem iluminação", categoria: "Iluminação", data: "11 abr. 2026", resolucao: "Em curso" },
-    { titulo: "Buraco na faixa de rodagem", categoria: "Pavimentos", data: "10 abr. 2026", resolucao: "Não iniciada" },
-  ];
-
-  return (
-    <>
-      <div className="painel-topo">
-        <div>
-          <h2>Ocorrências do departamento</h2>
-          <p className="painel-sub">
-            Atualize o estado das ocorrências que lhe foram encaminhadas.
-          </p>
-        </div>
-      </div>
-
-      <div className="cartao">
-        <table>
-          <thead>
-            <tr>
-              <th>Ocorrência</th>
-              <th>Categoria</th>
-              <th>Encaminhada</th>
-              <th>Resolução</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {ocorrencias.map((o) => (
-              <tr key={o.titulo}>
-                <td><strong>{o.titulo}</strong></td>
-                <td>{o.categoria}</td>
-                <td>{o.data}</td>
-                <td><Chip texto={o.resolucao} /></td>
-                <td><a href="#" className="link-acao">Atualizar estado</a></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </>
-  );
-}
-
-/* ---------- Escolhe o conteúdo consoante o perfil ---------- */
+/* ---------- Escolhe o que mostrar ---------- */
 export default function Home() {
   const perfil = localStorage.getItem("perfil");
+  const token = localStorage.getItem("token");
 
-  if (!MENUS[perfil]) {
+  if (!perfil || !token) {
     return <Navigate to="/login" replace />;
   }
 
-  return (
-    <Painel perfil={perfil}>
-      {perfil === "cidadao" && <HomeCidadao />}
-      {perfil === "administrador" && <HomeAdmin />}
-      {perfil === "funcionario" && <HomeFuncionario />}
-    </Painel>
-  );
+  if (perfil !== "cidadao") {
+    return (
+      <div className="painel-conteudo">
+        <p>Esta área ainda está em desenvolvimento.</p>
+      </div>
+    );
+  }
+
+  return <PaginaCidadao />;
 }
