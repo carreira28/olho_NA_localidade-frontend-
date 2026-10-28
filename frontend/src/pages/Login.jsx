@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
 
-// Converte a resposta do backend num dos 3 perfis do frontend
 function obterPerfil(utilizador) {
   if (utilizador.tipo === "cidadao") return "cidadao";
   if (utilizador.perfil === "ADMINISTRADOR") return "administrador";
@@ -53,7 +52,7 @@ export default function Login() {
           </p>
         </div>
         <p className="auth-painel-rodape">
-          📍 Mais perto da sua localidade. Todos os dias.
+          Mais perto da sua localidade. Todos os dias.
         </p>
       </aside>
 
@@ -70,7 +69,6 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@exemplo.com"
               required
             />
 
