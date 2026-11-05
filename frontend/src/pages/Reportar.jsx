@@ -1,25 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
-import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { api } from "../api.js";
 import BarraLateral from "../components/BarraLateralCidadao.jsx";
 import BarraTopo from "../components/BarraTopo.jsx";
 
-// Com o Vite, os ícones por defeito do Leaflet não carregam sem isto
-L.Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
-  shadowUrl: markerShadow,
-});
-
-const MAX_FOTOS = 3;
-const MAX_BYTES = 4 * 1024 * 1024; // igual ao limite do backend
-const CENTRO_INICIAL = [41.5323, -8.7796];
+const localizacaoInicial = { lat: 41.69536294033055, lng: -8.846697361528607 };
 
 function EscolherPonto({ onEscolher }) {
   useMapEvents({
@@ -46,7 +33,6 @@ export default function Reportar() {
       .catch((e) => setErro(e.message));
   }, []);
 
-  // Pré-visualizações das fotos; libertam-se quando a lista muda
   const previews = useMemo(
     () => fotos.map((f) => URL.createObjectURL(f)),
     [fotos],
@@ -57,16 +43,9 @@ export default function Reportar() {
 
   function escolherFotos(e) {
     const novas = Array.from(e.target.files);
-    e.target.value = ""; // permite escolher o mesmo ficheiro outra vez
-
-    if (fotos.length + novas.length > MAX_FOTOS) {
-      return setErro(`Podes anexar no máximo ${MAX_FOTOS} fotografias.`);
-    }
-    if (novas.some((f) => !["image/jpeg", "image/png"].includes(f.type))) {
-      return setErro("Só são permitidas imagens JPG ou PNG.");
-    }
-    if (novas.some((f) => f.size > MAX_BYTES)) {
-      return setErro("Cada fotografia pode ter no máximo 4 MB.");
+    e.target.value = "";
+    if (fotos.length + novas.length > 4) {
+      return setErro(`Podes anexar no máximo 4 fotografias.`);
     }
     setErro("");
     setFotos([...fotos, ...novas]);
@@ -145,9 +124,8 @@ export default function Reportar() {
 
               <div className="campo">
                 <label htmlFor="descricao">Descrição detalhada</label>
-                <textarea
+                <input
                   id="descricao"
-                  rows={4}
                   placeholder="Passeio danificado."
                   value={descricao}
                   onChange={(e) => setDescricao(e.target.value)}
@@ -187,7 +165,7 @@ export default function Reportar() {
                   onChange={escolherFotos}
                 />
                 <span>
-                  Clica para adicionar fotografias (máx. {MAX_FOTOS}, 4 MB cada)
+                  Clica para adicionar fotografias (máx. 4 fotos, 4 MB cada)
                 </span>
               </label>
 
@@ -199,6 +177,7 @@ export default function Reportar() {
                       <button type="button" onClick={() => removerFoto(i)}>
                         Remover
                       </button>
+                      <hr />
                     </div>
                   ))}
                 </div>
@@ -209,11 +188,12 @@ export default function Reportar() {
               <h3 className="cartao-titulo">3. Onde aconteceu?</h3>
               <p className="painel-sub">Assinala com um ponto no mapa.</p>
 
-              <MapContainer center={CENTRO_INICIAL} zoom={15} className="mapa">
-                <TileLayer
-                  attribution="&copy; OpenStreetMap"
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
+              <MapContainer
+                center={localizacaoInicial}
+                zoom={15}
+                className="mapa"
+              >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 <EscolherPonto onEscolher={setPosicao} />
                 {posicao && <Marker position={[posicao.lat, posicao.lng]} />}
               </MapContainer>
@@ -229,7 +209,7 @@ export default function Reportar() {
               <button
                 type="button"
                 className="btn-cancelar"
-                onClick={() => navigate("/ocorrencias")}
+                onClick={() => navigate("/OcorrenciasCidadao")}
               >
                 Cancelar
               </button>

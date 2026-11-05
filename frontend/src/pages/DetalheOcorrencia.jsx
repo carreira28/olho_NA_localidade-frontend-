@@ -25,7 +25,6 @@ const CLASSE_CHIP = {
   RESOLVIDA: "chip-ok",
 };
 
-// "NAO INICIADA" -> "Não iniciada" (para o texto que aparece no ecrã)
 const NOMES_BONITOS = {
   PENDENTE: "Pendente",
   VALIDADA: "Validada",
@@ -38,7 +37,6 @@ const NOMES_BONITOS = {
 
 const bonito = (texto) => NOMES_BONITOS[normalizar(texto)] ?? texto;
 
-// título do evento na timeline
 const TITULO_EVENTO = {
   PENDENTE: "Ocorrência submetida",
   VALIDADA: "Ocorrência validada",
@@ -46,10 +44,10 @@ const TITULO_EVENTO = {
 };
 
 const estadoAtual = (historico = [], tipo) =>
-  historico.find((h) => h.estado.tipo.nome_tipo === tipo)?.estado
-    .nome_estado ?? null;
+  historico.find((h) => h.estado.tipo.nome_tipo === tipo)?.estado.nome_estado ??
+  null;
 
-// ex.: "12 out. 2026, 09:14"
+//!alterer isto
 const formatarDataHora = (valor) => {
   const d = new Date(valor);
   const mes = d.toLocaleDateString("pt-PT", { month: "short" });
@@ -103,8 +101,7 @@ export default function DetalheOcorrencia() {
     ? (estadoAtual(problema.historicoEstados, TIPO_VALIDACAO) ?? "Pendente")
     : null;
   const resolucao = problema
-    ? (estadoAtual(problema.historicoEstados, TIPO_RESOLUCAO) ??
-      "Não iniciada")
+    ? (estadoAtual(problema.historicoEstados, TIPO_RESOLUCAO) ?? "Não iniciada")
     : null;
 
   // a timeline mostra do mais antigo para o mais recente (a API devolve o contrário)
@@ -196,6 +193,7 @@ export default function DetalheOcorrencia() {
                   {temLocalizacao ? (
                     <>
                       <Mapa
+                        className="mapa"
                         latitude={problema.latitude}
                         longitude={problema.longitude}
                       />
@@ -217,11 +215,15 @@ export default function DetalheOcorrencia() {
                     {eventos.map((h, i) => {
                       const nome = normalizar(h.estado.nome_estado);
                       return (
-                        <li key={h.id_historicoEstados} className="timeline-item">
+                        <li
+                          key={h.id_historicoEstados}
+                          className="timeline-item"
+                        >
                           <span className="timeline-ponto" />
                           <small>{formatarDataHora(h.data_hora)}</small>
                           <strong>
-                            {TITULO_EVENTO[nome] ?? bonito(h.estado.nome_estado)}
+                            {TITULO_EVENTO[nome] ??
+                              bonito(h.estado.nome_estado)}
                           </strong>
                           {i === 0 && <small>{utilizador?.nome}</small>}
                         </li>
