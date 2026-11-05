@@ -5,9 +5,15 @@ import BarraTopo from "../components/BarraTopo.jsx";
 
 export default function Reportar() {
   const [categorias, setCategorias] = useState([]);
-  const [idCategoria, setIdCategoria] = useState("");
-  const [descricao, setDescricao] = useState("");
-  const [urgente, setUrgente] = useState(false); // gravidade = true no backend
+  const [problem, setProblem] = useState({
+    descricao: "",
+    urgente: false,
+    foto: null,
+    fotoPreview: "",
+    idCategoria: "",
+    latitude: "",
+    longitude: "",
+  });
   const [erro, setErro] = useState("");
 
   useEffect(() => {
@@ -15,6 +21,25 @@ export default function Reportar() {
       .then(setCategorias)
       .catch((e) => setErro(e.message));
   }, []);
+
+  const handleChange = (e) => {
+    setProblem({ ...setProblem, [e.target.name]: e.target.value });
+  };
+
+  try {
+    const formData = new FormData();
+    formData.append("descricao", problem.descricao);
+    formData.append("urgente", problem.urgente);
+    formData.append("idCategoria", problem.idCategoria);
+    formData.append("latitude", problem.latitude);
+    if (problem.foto) formData.append("foto", problem.foto);
+    api("/api/problema", {
+      method: "POST",
+      body: formData,
+    });
+  } catch (err) {
+    setErro(err.message);
+  }
 
   return (
     <div className="painel">
@@ -39,8 +64,8 @@ export default function Reportar() {
               <label htmlFor="categoria">Categoria</label>
               <select
                 id="categoria"
-                value={idCategoria}
-                onChange={(e) => setIdCategoria(e.target.value)}
+                value={problem.idCategoria}
+                onChange={(e) => setProblem.idCategoria(e.target.value)}
               >
                 <option value="">Seleciona uma categoria</option>
                 {categorias.map((c) => (
@@ -56,12 +81,12 @@ export default function Reportar() {
 
             <div className="campo">
               <label htmlFor="descricao">Descrição detalhada</label>
-              <textarea
+              <input
                 id="descricao"
-                rows={4}
+                type="text"
                 placeholder="Passeio danificado."
-                value={descricao}
-                onChange={(e) => setDescricao(e.target.value)}
+                value={problem.descricao}
+                onChange={handleChange}
               />
             </div>
 
@@ -70,15 +95,15 @@ export default function Reportar() {
               <div className="opcoes-gravidade">
                 <button
                   type="button"
-                  className={`opcao ${!urgente ? "opcao-ativa" : ""}`}
-                  onClick={() => setUrgente(false)}
+                  className={`opcao ${!problem.urgente ? "opcao-ativa" : ""}`}
+                  onClick={() => setProblem.urgente(false)}
                 >
                   Não Urgente
                 </button>
                 <button
                   type="button"
-                  className={`opcao ${urgente ? "opcao-ativa" : ""}`}
-                  onClick={() => setUrgente(true)}
+                  className={`opcao ${problem.urgente ? "opcao-ativa" : ""}`}
+                  onClick={() => setProblem.urgente(true)}
                 >
                   Urgente
                 </button>

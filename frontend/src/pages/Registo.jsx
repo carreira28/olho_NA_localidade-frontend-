@@ -12,11 +12,6 @@ export default function Registo() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (password.length < 6) {
-      setErro("A palavra-passe deve ter pelo menos 6 caracteres.");
-      return;
-    }
-
     try {
       setErro("");
       await api("/auth/signup", {
@@ -58,6 +53,7 @@ export default function Registo() {
               type="text"
               value={nome}
               onChange={(e) => setNome(e.target.value)}
+              placeholder="Exemplo"
               required
             />
 
@@ -67,6 +63,7 @@ export default function Registo() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="exemplo@gmail.com"
               required
             />
 
@@ -76,10 +73,15 @@ export default function Registo() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="**********"
               required
             />
 
-            {erro && <p className="auth-erro" role="alert">{erro}</p>}
+            {erro && (
+              <p className="auth-erro" role="alert">
+                {erro}
+              </p>
+            )}
 
             <button type="submit" className="btn-auth">
               <span aria-hidden="true">+</span> Criar conta
