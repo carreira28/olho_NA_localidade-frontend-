@@ -1,6 +1,6 @@
 export function lerUtilizador() {
   try {
-    const guardado = localStorage.getItem("utilizador"); // usa a chave que já tens
+    const guardado = localStorage.getItem("utilizador"); 
     return guardado ? JSON.parse(guardado) : null;
   } catch {
     return null;
