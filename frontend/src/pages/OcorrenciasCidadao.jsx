@@ -32,8 +32,8 @@ const estadoAtual = (historico = [], tipo) =>
 
 const formatarData = (valor) => {
   const d = new Date(valor);
-  const mes = d.toLocaleDateString("pt-PT", { month: "short" });
-  return `${d.getDate()} ${mes} ${d.getFullYear()}`;
+  const data = d.toLocaleDateString("pt-PT");
+  return `${data}`;
 };
 
 function Chip({ texto }) {
