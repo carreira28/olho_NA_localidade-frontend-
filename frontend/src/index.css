@@ -441,3 +441,136 @@ background-color: grey;
   color: var(--verde-agua-escuro);
 }
 
+
+/* ===== Detalhe da ocorrência ===== */
+.detalhe-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 1.2rem;
+  align-items: start;
+}
+
+.detalhe-coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.detalhe-data {
+  font-size: 0.78rem;
+  color: var(--cinza-texto);
+  margin-bottom: 0.8rem;
+}
+
+.detalhe-titulo {
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+}
+
+.detalhe-estados {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.detalhe-gravidade {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+}
+
+.detalhe-sem-foto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  margin-bottom: 1rem;
+  background: #f4f7f9;
+  border: 1px dashed var(--borda);
+  border-radius: 8px;
+  color: var(--verde-agua);
+}
+
+.detalhe-fotos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.detalhe-fotos img {
+  display: block;
+  height: 120px;
+  border-radius: 8px;
+  border: 1px solid var(--borda);
+  object-fit: cover;
+}
+
+.detalhe-categoria {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.detalhe-mapa {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: 240px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+}
+
+.detalhe-coords {
+  margin-top: 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.timeline {
+  list-style: none;
+}
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-left: 1.2rem;
+  padding-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.timeline-item small {
+  color: var(--cinza-texto);
+}
+
+.timeline-ponto {
+  position: absolute;
+  left: 0;
+  top: 0.3rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--verde-agua);
+}
+
+/* linha a ligar os pontos */
+.timeline-item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 3.5px;
+  top: 1rem;
+  bottom: 0;
+  width: 1px;
+  background: var(--borda);
+}
+
+.detalhe-voltar {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .detalhe-grid {
+    grid-template-columns: 1fr;
+  }
+}

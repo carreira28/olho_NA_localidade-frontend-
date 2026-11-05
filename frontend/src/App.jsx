@@ -5,6 +5,7 @@ import OcorrenciasCidadao from "./pages/OcorrenciasCidadao.jsx";
 import ReportarOcorrencia from "./pages/Reportar.jsx";
 import RotaProtegida from "./components/RotaProtegida.jsx";
 import SemPermissoes from "./pages/SemPermissoes.jsx";
+import DetalheOcorrencia from "./pages/DetalheOcorrencia.jsx";
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
       <Route element={<RotaProtegida tipo="cidadao" />}>
         <Route path="/OcorrenciasCidadao" element={<OcorrenciasCidadao />} />
         <Route path="/reportar" element={<ReportarOcorrencia />} />
+        <Route path="/ocorrencias/:id" element={<DetalheOcorrencia />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />
