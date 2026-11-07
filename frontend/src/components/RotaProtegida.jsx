@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { lerUtilizador } from "../utils/sessao.js";
+import { lerUtilizador, obterPerfil } from "../utils/sessao.js";
 
-export default function RotaProtegida({ tipo }) {
+export default function RotaProtegida({ perfil }) {
   const token = localStorage.getItem("token");
   const utilizador = lerUtilizador();
 
@@ -9,7 +9,7 @@ export default function RotaProtegida({ tipo }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (tipo && utilizador.tipo !== tipo) {
+  if (perfil && obterPerfil(utilizador) !== perfil) {
     return <Navigate to="/nao-autorizado" replace />;
   }
 

@@ -9,6 +9,12 @@ function obterPerfil(utilizador) {
   return null;
 }
 
+const DESTINO = {
+  cidadao: "/OcorrenciasCidadao",
+  administrador: "/admin/ocorrencias",
+  funcionario: "/funcionario/ocorrencias",
+};
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +40,7 @@ export default function Login() {
       localStorage.setItem("token", dados.token);
       localStorage.setItem("perfil", perfil);
       localStorage.setItem("utilizador", JSON.stringify(dados.utilizador));
-      navigate("/OcorrenciasCidadao");
+      navigate(DESTINO[perfil], { replace: true });
     } catch (err) {
       setErro(err.message);
     }

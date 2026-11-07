@@ -319,6 +319,10 @@ td small {
   color: var(--cinza-texto);
   padding: 30px;
 }
+
+.barra-topo span {
+  margin-left: auto;
+}
 .menu-item {
   display: flex;
   align-items: center;
@@ -631,4 +635,18 @@ td small {
 
 .previews hr {
   margin-bottom: 50px;
+}
+
+.filtros-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+.filtros input[type="date"] {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--azul-escuro);
+  background: white;
 }

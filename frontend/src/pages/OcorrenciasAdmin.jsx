@@ -6,8 +6,6 @@ import BarraTopo from "../components/BarraTopo.jsx";
 
 const TIPO_VALIDACAO = "VALIDACAO";
 const TIPO_RESOLUCAO = "RESOLUCAO";
-
-// estados que aparecem no filtro "Estado" (validação + resolução)
 const ESTADOS_FILTRO = [
   "Pendente",
   "Validada",
@@ -18,11 +16,21 @@ const ESTADOS_FILTRO = [
   "Resolvida",
 ];
 
-const normalizar = (texto = "") =>
-  texto
+const OPCOES_GRAVIDADE = [
+  { valor: "urgente", texto: "Urgente" },
+  { valor: "nao-urgente", texto: "Não urgente" },
+];
+const normalizar = (texto) =>
+  (texto ?? "")
+    .replace(/_/g, " ")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toUpperCase();
+
+const rotulo = (texto) => {
+  const limpo = (texto ?? "").replace(/_/g, " ").toLowerCase();
+  return limpo.charAt(0).toUpperCase() + limpo.slice(1);
+};
 
 const CLASSE_CHIP = {
   PENDENTE: "chip-aviso",
@@ -34,23 +42,16 @@ const CLASSE_CHIP = {
   RESOLVIDA: "chip-ok",
 };
 
-// "NAO INICIADA" -> "Não iniciada"
-const NOMES_BONITOS = Object.fromEntries(
-  ESTADOS_FILTRO.map((nome) => [normalizar(nome), nome]),
-);
-const bonito = (texto) => NOMES_BONITOS[normalizar(texto)] ?? texto;
-
 const estadoAtual = (historico = [], tipo) =>
-  historico.find((h) => h.estado.tipo.nome_tipo === tipo)?.estado
-    .nome_estado ?? null;
+  historico.find((h) => h.estado.tipo.nome_tipo === tipo)?.estado.nome_estado ??
+  null;
 
 const formatarData = (valor) => {
   const d = new Date(valor);
-  const mes = d.toLocaleDateString("pt-PT", { month: "short" });
-  return `${d.getDate()} ${mes} ${d.getFullYear()}`;
+  const data = d.toLocaleDateString("pt-PT");
+  return `${data}`;
 };
 
-// "2026-10-12" (formato do <input type="date">) a partir de uma data da API
 const paraDiaISO = (valor) => {
   const d = new Date(valor);
   const mes = String(d.getMonth() + 1).padStart(2, "0");
@@ -60,7 +61,7 @@ const paraDiaISO = (valor) => {
 
 function Chip({ texto }) {
   const classe = CLASSE_CHIP[normalizar(texto)] ?? "chip-neutro";
-  return <span className={`chip ${classe}`}>{bonito(texto)}</span>;
+  return <span className={`chip ${classe}`}>{rotulo(texto)}</span>;
 }
 
 export default function OcorrenciasAdmin() {
@@ -68,42 +69,28 @@ export default function OcorrenciasAdmin() {
 
   const [problemas, setProblemas] = useState([]);
   const [categorias, setCategorias] = useState([]);
-  const [prioridades, setPrioridades] = useState([]);
-
   const [filtroEstado, setFiltroEstado] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("");
-  const [filtroPrioridade, setFiltroPrioridade] = useState("");
   const [filtroData, setFiltroData] = useState("");
-
+  const [filtroGravidade, setFiltroGravidade] = useState("");
   const [aCarregar, setACarregar] = useState(true);
   const [erro, setErro] = useState("");
 
   useEffect(() => {
-    Promise.all([
-      api("/api/gestao/problemas"),
-      api("/api/categorias"),
-      api("/api/prioridades"),
-    ])
-      .then(([listaProblemas, listaCategorias, listaPrioridades]) => {
+    Promise.all([api("/api/gestao/problemas"), api("/api/categorias")])
+      .then(([listaProblemas, listaCategorias]) => {
         setProblemas(listaProblemas);
         setCategorias(listaCategorias);
-        setPrioridades(listaPrioridades);
       })
       .catch((e) => setErro(e.message))
       .finally(() => setACarregar(false));
   }, []);
 
-  // cartões do topo
   const total = problemas.length;
   const pendentes = problemas.filter(
     (p) =>
       normalizar(estadoAtual(p.historicoEstados, TIPO_VALIDACAO)) ===
       "PENDENTE",
-  ).length;
-  const resolvidas = problemas.filter(
-    (p) =>
-      normalizar(estadoAtual(p.historicoEstados, TIPO_RESOLUCAO)) ===
-      "RESOLVIDA",
   ).length;
 
   const visiveis = useMemo(
@@ -113,23 +100,26 @@ export default function OcorrenciasAdmin() {
         const resolucao =
           estadoAtual(p.historicoEstados, TIPO_RESOLUCAO) ?? "Não iniciada";
 
-        // o filtro "Estado" aceita tanto estados de validação como de resolução
         const passaEstado =
           !filtroEstado ||
           normalizar(validacao) === normalizar(filtroEstado) ||
           normalizar(resolucao) === normalizar(filtroEstado);
+
+        const passaGravidade =
+          !filtroGravidade ||
+          (filtroGravidade === "urgente" ? p.gravidade : !p.gravidade);
+
         const passaCategoria =
           !filtroCategoria || p.id_categoria === Number(filtroCategoria);
-        const passaPrioridade =
-          !filtroPrioridade || p.id_prioridade === Number(filtroPrioridade);
         const passaData =
           !filtroData || paraDiaISO(p.data_criacao) === filtroData;
 
-        return passaEstado && passaCategoria && passaPrioridade && passaData;
+        return passaEstado && passaCategoria && passaGravidade && passaData;
       }),
-    [problemas, filtroEstado, filtroCategoria, filtroPrioridade, filtroData],
+    [problemas, filtroEstado, filtroCategoria, filtroGravidade, filtroData],
   );
 
+  const valor = visiveis.length;
   return (
     <div className="painel">
       <BarraLateralAdmin />
@@ -152,8 +142,8 @@ export default function OcorrenciasAdmin() {
               <strong>{pendentes}</strong>
             </div>
             <div className="cartao">
-              <p>Resolvidas</p>
-              <strong>{resolvidas}</strong>
+              <p> Total com Filtro</p>
+              <strong>{valor}</strong>
             </div>
           </div>
 
@@ -194,16 +184,16 @@ export default function OcorrenciasAdmin() {
               </div>
 
               <div>
-                <label htmlFor="f-prioridade">Prioridade</label>
+                <label htmlFor="f-gravidade">Gravidade</label>
                 <select
-                  id="f-prioridade"
-                  value={filtroPrioridade}
-                  onChange={(e) => setFiltroPrioridade(e.target.value)}
+                  id="f-gravidade"
+                  value={filtroGravidade}
+                  onChange={(e) => setFiltroGravidade(e.target.value)}
                 >
                   <option value="">Todas</option>
-                  {prioridades.map((pr) => (
-                    <option key={pr.id_prioridade} value={pr.id_prioridade}>
-                      {pr.tipo_prioridade}
+                  {OPCOES_GRAVIDADE.map((o) => (
+                    <option key={o.valor} value={o.valor}>
+                      {o.texto}
                     </option>
                   ))}
                 </select>

@@ -69,7 +69,7 @@ export default function Reportar() {
     formData.append("id_categoria", idCategoria);
     formData.append("latitude", posicao.lat);
     formData.append("longitude", posicao.lng);
-    fotos.forEach((f) => formData.append("fotos", f)); // o nome tem de ser "fotos"
+    fotos.forEach((f) => formData.append("fotos", f));
 
     setAEnviar(true);
     try {

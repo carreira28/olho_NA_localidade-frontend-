@@ -25,7 +25,7 @@ const CLASSE_CHIP = {
   RESOLVIDA: "chip-ok",
 };
 
-const NOMES_BONITOS = {
+const CLASSE_CHIP_NAME = {
   PENDENTE: "Pendente",
   VALIDADA: "Validada",
   REJEITADA: "Rejeitada",
@@ -35,7 +35,7 @@ const NOMES_BONITOS = {
   RESOLVIDA: "Resolvida",
 };
 
-const bonito = (texto) => NOMES_BONITOS[normalizar(texto)] ?? texto;
+const name = (texto) => CLASSE_CHIP_NAME[normalizar(texto)] ?? texto;
 
 const TITULO_EVENTO = {
   PENDENTE: "Ocorrência submetida",
@@ -47,18 +47,15 @@ const estadoAtual = (historico = [], tipo) =>
   historico.find((h) => h.estado.tipo.nome_tipo === tipo)?.estado.nome_estado ??
   null;
 
-//!alterer isto
 const formatarDataHora = (valor) => {
   const d = new Date(valor);
-  const mes = d.toLocaleDateString("pt-PT", { month: "short" });
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${d.getDate()} ${mes} ${d.getFullYear()}, ${hh}:${mm}`;
+  const data = d.toLocaleDateString("pt-PT");
+  return `${data}`;
 };
 
 function Chip({ texto }) {
   const classe = CLASSE_CHIP[normalizar(texto)] ?? "chip-neutro";
-  return <span className={`chip ${classe}`}>{bonito(texto)}</span>;
+  return <span className={`chip ${classe}`}>{name(texto)}</span>;
 }
 
 function Mapa({ latitude, longitude }) {
@@ -104,7 +101,6 @@ export default function DetalheOcorrencia() {
     ? (estadoAtual(problema.historicoEstados, TIPO_RESOLUCAO) ?? "Não iniciada")
     : null;
 
-  // a timeline mostra do mais antigo para o mais recente (a API devolve o contrário)
   const eventos = problema ? [...problema.historicoEstados].reverse() : [];
 
   const temLocalizacao =
@@ -222,8 +218,7 @@ export default function DetalheOcorrencia() {
                           <span className="timeline-ponto" />
                           <small>{formatarDataHora(h.data_hora)}</small>
                           <strong>
-                            {TITULO_EVENTO[nome] ??
-                              bonito(h.estado.nome_estado)}
+                            {TITULO_EVENTO[nome] ?? name(h.estado.nome_estado)}
                           </strong>
                           {i === 0 && <small>{utilizador?.nome}</small>}
                         </li>

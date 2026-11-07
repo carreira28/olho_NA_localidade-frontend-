@@ -14,29 +14,28 @@ export default function BarraLateral() {
     <aside className="painel-lateral">
       <div>
         <p className="painel-marca">Olho na localidade</p>
-        <p className="painel-area">Cidadão</p>
+        <p className="painel-area">Administrador</p>
 
         <nav>
-          <NavLink to="/OcorrenciasCidadao" end className={classeMenu}>
+          <NavLink to="/admin/ocorrencias" end className={classeMenu}>
             <TiThListOutline />
             <span>Todas as Ocorrencias</span>
           </NavLink>
 
-          <NavLink to="/reportar" className={classeMenu}>
+          <NavLink to="/" className={classeMenu}>
             <FiPlusCircle />
             <span>Categorias</span>
           </NavLink>
 
-          <NavLink to="/reportar" className={classeMenu}>
+          <NavLink to="/" className={classeMenu}>
             <FiPlusCircle />
             <span>Utilizadores</span>
           </NavLink>
 
-          <NavLink to="/reportar" className={classeMenu}>
+          <NavLink to="/" className={classeMenu}>
             <FiPlusCircle />
             <span>Departamentos</span>
           </NavLink>
-
         </nav>
       </div>
 
