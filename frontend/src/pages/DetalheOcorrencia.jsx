@@ -5,15 +5,10 @@ import { api } from "../api.js";
 import BarraLateral from "../components/BarraLateralCidadao.jsx";
 import BarraTopo from "../components/BarraTopo.jsx";
 import { lerUtilizador } from "../utils/sessao.js";
+import MapaEscolha from "../components/MapaEscolha.jsx";
 
 const TIPO_VALIDACAO = "VALIDACAO";
 const TIPO_RESOLUCAO = "RESOLUCAO";
-
-const normalizar = (texto = "") =>
-  texto
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toUpperCase();
 
 const CLASSE_CHIP = {
   PENDENTE: "chip-aviso",
@@ -35,7 +30,7 @@ const CLASSE_CHIP_NAME = {
   RESOLVIDA: "Resolvida",
 };
 
-const name = (texto) => CLASSE_CHIP_NAME[normalizar(texto)] ?? texto;
+const name = (texto) => CLASSE_CHIP_NAME[texto] ?? texto;
 
 const TITULO_EVENTO = {
   PENDENTE: "Ocorrência submetida",
@@ -54,7 +49,7 @@ const formatarDataHora = (valor) => {
 };
 
 function Chip({ texto }) {
-  const classe = CLASSE_CHIP[normalizar(texto)] ?? "chip-neutro";
+  const classe = CLASSE_CHIP[texto] ?? "chip-neutro";
   return <span className={`chip ${classe}`}>{name(texto)}</span>;
 }
 
@@ -85,6 +80,10 @@ export default function DetalheOcorrencia() {
 
   const [problema, setProblema] = useState(null);
   const [aCarregar, setACarregar] = useState(true);
+  const [aEditarLocal, setAEditarLocal] = useState(false);
+  const [novaPosicao, setNovaPosicao] = useState(null);
+  const [aGuardar, setAGuardar] = useState(false);
+  const [erroLocal, setErroLocal] = useState("");
   const [erro, setErro] = useState("");
 
   useEffect(() => {
@@ -95,16 +94,48 @@ export default function DetalheOcorrencia() {
   }, [id]);
 
   const validacao = problema
-    ? (estadoAtual(problema.historicoEstados, TIPO_VALIDACAO) ?? "Pendente")
+    ? (estadoAtual(problema.historicoEstados, TIPO_VALIDACAO) ?? "PENDENTE")
     : null;
   const resolucao = problema
-    ? (estadoAtual(problema.historicoEstados, TIPO_RESOLUCAO) ?? "Não iniciada")
+    ? (estadoAtual(problema.historicoEstados, TIPO_RESOLUCAO) ?? "NAO INICIADA")
     : null;
+
+  const podeEditarLocal = validacao === "PENDENTE";
 
   const eventos = problema ? [...problema.historicoEstados].reverse() : [];
 
   const temLocalizacao =
     problema?.latitude != null && problema?.longitude != null;
+
+  async function guardarLocalizacao() {
+    if (!novaPosicao) return setErroLocal("Assinala o local no mapa.");
+
+    setAGuardar(true);
+    setErroLocal("");
+    try {
+      const atualizado = await api(`/api/problemas/${id}/localizacao`, {
+        method: "PATCH",
+        body: { latitude: novaPosicao.lat, longitude: novaPosicao.lng },
+      });
+      setProblema({
+        ...problema,
+        latitude: atualizado.latitude,
+        longitude: atualizado.longitude,
+      });
+      setAEditarLocal(false);
+      setNovaPosicao(null);
+    } catch (e) {
+      setErroLocal(e.message);
+    } finally {
+      setAGuardar(false);
+    }
+  }
+
+  function cancelarEdicao() {
+    setAEditarLocal(false);
+    setNovaPosicao(null);
+    setErroLocal("");
+  }
 
   return (
     <div className="painel">
@@ -186,19 +217,69 @@ export default function DetalheOcorrencia() {
 
                 <div className="cartao">
                   <h3 className="cartao-titulo">Localização</h3>
-                  {temLocalizacao ? (
+
+                  {aEditarLocal ? (
                     <>
-                      <Mapa
-                        className="mapa"
-                        latitude={problema.latitude}
-                        longitude={problema.longitude}
-                      />
-                      <p className="detalhe-coords">
-                        {problema.latitude}, {problema.longitude}
+                      <p className="painel-sub">
+                        Assinala com um ponto no mapa.
                       </p>
+                      <MapaEscolha
+                        posicao={novaPosicao}
+                        onEscolher={setNovaPosicao}
+                        centro={
+                          temLocalizacao
+                            ? [problema.latitude, problema.longitude]
+                            : undefined
+                        }
+                      />
+                      {novaPosicao && (
+                        <p className="detalhe-coords">
+                          {novaPosicao.lat.toFixed(6)},{" "}
+                          {novaPosicao.lng.toFixed(6)}
+                        </p>
+                      )}
+                      {erroLocal && <p className="auth-erro">{erroLocal}</p>}
+                      <div className="acoes-form">
+                        <button
+                          className="btn-secundario"
+                          onClick={cancelarEdicao}
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          className="btn-auth btn-pequeno"
+                          onClick={guardarLocalizacao}
+                          disabled={aGuardar || !novaPosicao}
+                        >
+                          {aGuardar ? "A guardar…" : "Guardar localização"}
+                        </button>
+                      </div>
                     </>
                   ) : (
-                    <p className="painel-sub">Sem localização registada.</p>
+                    <>
+                      {temLocalizacao ? (
+                        <>
+                          <Mapa
+                            latitude={problema.latitude}
+                            longitude={problema.longitude}
+                          />
+                          <p className="detalhe-coords">
+                            {problema.latitude}, {problema.longitude}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="painel-sub">Sem localização registada.</p>
+                      )}
+
+                      {podeEditarLocal && !temLocalizacao && (
+                        <button
+                          className="btn-auth btn-pequeno"
+                          onClick={() => setAEditarLocal(true)}
+                        >
+                          Adicionar localização
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -209,7 +290,7 @@ export default function DetalheOcorrencia() {
 
                   <ul className="timeline">
                     {eventos.map((h, i) => {
-                      const nome = normalizar(h.estado.nome_estado);
+                      const nome = h.estado.nome_estado;
                       return (
                         <li
                           key={h.id_historicoEstados}

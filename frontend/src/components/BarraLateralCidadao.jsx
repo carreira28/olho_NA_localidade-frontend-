@@ -15,7 +15,6 @@ export default function BarraLateral() {
       <div>
         <p className="painel-marca">Olho na localidade</p>
         <p className="painel-area">Cidadão</p>
-
         <nav>
           <NavLink to="/OcorrenciasCidadao" end className={classeMenu}>
             <TiThListOutline />

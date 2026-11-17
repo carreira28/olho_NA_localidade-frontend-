@@ -9,12 +9,6 @@ const TIPO_VALIDACAO = "VALIDACAO";
 const TIPO_RESOLUCAO = "RESOLUCAO";
 const ESTADOS_VALIDACAO = ["Pendente", "Validada", "Rejeitada"];
 
-const normalizar = (texto = "") =>
-  texto
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toUpperCase();
-
 //class css correspondente
 const CLASSE_CHIP = {
   PENDENTE: "chip-aviso",
@@ -37,7 +31,7 @@ const formatarData = (valor) => {
 };
 
 function Chip({ texto }) {
-  const classe = CLASSE_CHIP[normalizar(texto)] ?? "chip-neutro";
+  const classe = CLASSE_CHIP[texto] ?? "chip-neutro";
   return <span className={`chip ${classe}`}>{texto}</span>;
 }
 
@@ -66,8 +60,7 @@ export default function PaginaInicial() {
     () =>
       problemas.filter((p) => {
         const validacao = estadoAtual(p.historicoEstados, TIPO_VALIDACAO);
-        const passaEstado =
-          !filtroEstado || normalizar(validacao) === normalizar(filtroEstado);
+        const passaEstado = !filtroEstado || validacao === filtroEstado;
         const passaCategoria =
           !filtroCategoria || p.id_categoria === Number(filtroCategoria);
         return passaEstado && passaCategoria;

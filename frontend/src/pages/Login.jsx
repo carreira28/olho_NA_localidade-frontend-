@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
-
-function obterPerfil(utilizador) {
-  if (utilizador.tipo === "cidadao") return "cidadao";
-  if (utilizador.perfil === "ADMINISTRADOR") return "administrador";
-  if (utilizador.perfil === "FUNCIONARIO MUNICIPAL") return "funcionario";
-  return null;
-}
+import { obterPerfil } from "../utils/sessao";
 
 const DESTINO = {
   cidadao: "/OcorrenciasCidadao",

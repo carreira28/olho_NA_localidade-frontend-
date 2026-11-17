@@ -61,14 +61,15 @@ export default function Reportar() {
 
     if (!idCategoria) return setErro("Escolhe uma categoria.");
     if (!descricao.trim()) return setErro("Escreve uma descrição.");
-    if (!posicao) return setErro("Assinala o local da ocorrência no mapa.");
 
     const formData = new FormData();
     formData.append("descricao", descricao.trim());
     formData.append("gravidade", urgente);
     formData.append("id_categoria", idCategoria);
-    formData.append("latitude", posicao.lat);
-    formData.append("longitude", posicao.lng);
+    if (posicao) {
+      formData.append("latitude", posicao.lat);
+      formData.append("longitude", posicao.lng);
+    }
     fotos.forEach((f) => formData.append("fotos", f));
 
     setAEnviar(true);

@@ -9,12 +9,6 @@ import { lerUtilizador } from "../utils/sessao.js";
 const TIPO_VALIDACAO = "VALIDACAO";
 const TIPO_RESOLUCAO = "RESOLUCAO";
 
-const normalizar = (texto = "") =>
-  texto
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toUpperCase();
-
 const CLASSE_CHIP = {
   PENDENTE: "chip-aviso",
   VALIDADA: "chip-ok",
@@ -35,7 +29,7 @@ const CLASSE_CHIP_NAME = {
   RESOLVIDA: "Resolvida",
 };
 
-const name = (texto) => CLASSE_CHIP_NAME[normalizar(texto)] ?? texto;
+const name = (texto) => CLASSE_CHIP_NAME[texto] ?? texto;
 
 const TITULO_EVENTO = {
   PENDENTE: "Ocorrência submetida",
@@ -54,7 +48,7 @@ const formatarDataHora = (valor) => {
 };
 
 function Chip({ texto }) {
-  const classe = CLASSE_CHIP[normalizar(texto)] ?? "chip-neutro";
+  const classe = CLASSE_CHIP[texto] ?? "chip-neutro";
   return <span className={`chip ${classe}`}>{name(texto)}</span>;
 }
 
@@ -209,7 +203,7 @@ export default function DetalheOcorrencia() {
 
                   <ul className="timeline">
                     {eventos.map((h, i) => {
-                      const nome = normalizar(h.estado.nome_estado);
+                      const nome = h.estado.nome_estado;
                       return (
                         <li
                           key={h.id_historicoEstados}

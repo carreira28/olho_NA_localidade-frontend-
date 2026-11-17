@@ -20,17 +20,6 @@ const OPCOES_GRAVIDADE = [
   { valor: "urgente", texto: "Urgente" },
   { valor: "nao-urgente", texto: "Não urgente" },
 ];
-const normalizar = (texto) =>
-  (texto ?? "")
-    .replace(/_/g, " ")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toUpperCase();
-
-const rotulo = (texto) => {
-  const limpo = (texto ?? "").replace(/_/g, " ").toLowerCase();
-  return limpo.charAt(0).toUpperCase() + limpo.slice(1);
-};
 
 const CLASSE_CHIP = {
   PENDENTE: "chip-aviso",
@@ -53,15 +42,12 @@ const formatarData = (valor) => {
 };
 
 const paraDiaISO = (valor) => {
-  const d = new Date(valor);
-  const mes = String(d.getMonth() + 1).padStart(2, "0");
-  const dia = String(d.getDate()).padStart(2, "0");
-  return `${d.getFullYear()}-${mes}-${dia}`;
+  return new Date(valor).toISOString().split("T")[0];
 };
 
 function Chip({ texto }) {
-  const classe = CLASSE_CHIP[normalizar(texto)] ?? "chip-neutro";
-  return <span className={`chip ${classe}`}>{rotulo(texto)}</span>;
+  const classe = CLASSE_CHIP[texto] ?? "chip-neutro";
+  return <span className={`chip ${classe}`}>{texto}</span>;
 }
 
 export default function OcorrenciasAdmin() {
@@ -88,9 +74,7 @@ export default function OcorrenciasAdmin() {
 
   const total = problemas.length;
   const pendentes = problemas.filter(
-    (p) =>
-      normalizar(estadoAtual(p.historicoEstados, TIPO_VALIDACAO)) ===
-      "PENDENTE",
+    (p) => estadoAtual(p.historicoEstados, TIPO_VALIDACAO) === "PENDENTE",
   ).length;
 
   const visiveis = useMemo(
@@ -102,8 +86,8 @@ export default function OcorrenciasAdmin() {
 
         const passaEstado =
           !filtroEstado ||
-          normalizar(validacao) === normalizar(filtroEstado) ||
-          normalizar(resolucao) === normalizar(filtroEstado);
+          validacao === filtroEstado ||
+          resolucao === filtroEstado;
 
         const passaGravidade =
           !filtroGravidade ||
@@ -235,7 +219,7 @@ export default function OcorrenciasAdmin() {
                     const resolucao =
                       estadoAtual(p.historicoEstados, TIPO_RESOLUCAO) ??
                       "Não iniciada";
-                    const porValidar = normalizar(validacao) === "PENDENTE";
+                    const porValidar = validacao === "PENDENTE";
 
                     return (
                       <tr key={p.id_problema}>
