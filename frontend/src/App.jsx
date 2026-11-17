@@ -7,6 +7,7 @@ import RotaProtegida from "./components/RotaProtegida.jsx";
 import SemPermissoes from "./pages/SemPermissoes.jsx";
 import DetalheOcorrencia from "./pages/DetalheOcorrencia.jsx";
 import OcorrenciasAdmin from "./pages/OcorrenciasAdmin.jsx";
+import DetalheOcorrenciaManagement from "./pages/DetalheOcorrenciaManagement.jsx";
 
 export default function App() {
   return (
@@ -25,6 +26,10 @@ export default function App() {
       <Route>
         <Route element={<RotaProtegida tipo="administrador" />} />
         <Route path="/admin/Ocorrencias" element={<OcorrenciasAdmin />} />
+        <Route
+          path="/admin/Ocorrencia/:id"
+          element={<DetalheOcorrenciaManagement />}
+        />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

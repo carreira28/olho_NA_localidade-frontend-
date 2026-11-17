@@ -257,7 +257,9 @@ export default function OcorrenciasAdmin() {
                           {p.gravidade ? (
                             <span className="chip chip-aviso">Urgente</span>
                           ) : (
-                            "—"
+                            <span className="chip chip-neutro">
+                              Não Urgente
+                            </span>
                           )}
                         </td>
                         <td>
@@ -268,7 +270,7 @@ export default function OcorrenciasAdmin() {
                                 : "btn-secundario"
                             }
                             onClick={() =>
-                              navigate(`/admin/ocorrencias/${p.id_problema}`)
+                              navigate(`/admin/Ocorrencia/${p.id_problema}`)
                             }
                           >
                             {porValidar ? "Validar" : "Ver detalhes"}
