@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FiArrowLeft, FiImage } from "react-icons/fi";
+import { FiArrowLeft, FiCheck, FiImage } from "react-icons/fi";
 import { api } from "../api.js";
 import BarraLateralAdmin from "../components/BarraLateralAdmin.jsx";
 import BarraTopo from "../components/BarraTopo.jsx";
@@ -47,6 +47,15 @@ const formatarDataHora = (valor) => {
   return `${data}`;
 };
 
+const BOTAO_DECISAO = {
+  padding: "0.45rem 0.9rem",
+  fontSize: "0.82rem",
+  gap: "0.35rem",
+};
+
+const capitalizar = (t = "") =>
+  t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
+
 function Chip({ texto }) {
   const classe = CLASSE_CHIP[texto] ?? "chip-neutro";
   return <span className={`chip ${classe}`}>{name(texto)}</span>;
@@ -81,12 +90,52 @@ export default function DetalheOcorrencia() {
   const [aCarregar, setACarregar] = useState(true);
   const [erro, setErro] = useState("");
 
-  useEffect(() => {
+  const [categorias, setCategorias] = useState([]);
+  const [prioridades, setPrioridades] = useState([]);
+  const [idCategoria, setIdCategoria] = useState("");
+  const [idPrioridade, setIdPrioridade] = useState("");
+  const [aSubmeter, setASubmeter] = useState(false);
+  const [erroDecisao, setErroDecisao] = useState("");
+
+  const carregar = () =>
     api(`/api/gestao/problemas/${id}`)
-      .then(setProblema)
+      .then((p) => {
+        setProblema(p);
+        setIdCategoria(String(p.id_categoria));
+        setIdPrioridade(p.id_prioridade ? String(p.id_prioridade) : "");
+      })
       .catch((e) => setErro(e.message))
       .finally(() => setACarregar(false));
+
+  useEffect(() => {
+    carregar();
+    api("/api/categorias").then(setCategorias).catch(() => {});
+    api("/api/prioridades").then(setPrioridades).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  const decidir = async (acao) => {
+    setErroDecisao("");
+    setASubmeter(true);
+    try {
+      if (acao === "validar") {
+        await api(`/api/problemas/${id}/validar`, {
+          method: "PATCH",
+          body: {
+            id_categoria: Number(idCategoria),
+            id_prioridade: Number(idPrioridade),
+          },
+        });
+      } else {
+        await api(`/api/problemas/${id}/rejeitar`, { method: "PATCH" });
+      }
+      await carregar();
+    } catch (e) {
+      setErroDecisao(e.message);
+    } finally {
+      setASubmeter(false);
+    }
+  };
 
   const validacao = problema
     ? (estadoAtual(problema.historicoEstados, TIPO_VALIDACAO) ?? "Pendente")
@@ -94,6 +143,8 @@ export default function DetalheOcorrencia() {
   const resolucao = problema
     ? (estadoAtual(problema.historicoEstados, TIPO_RESOLUCAO) ?? "Não iniciada")
     : null;
+
+  const porValidar = validacao?.toUpperCase() === "PENDENTE";
 
   const eventos = problema ? [...problema.historicoEstados].reverse() : [];
 
@@ -198,6 +249,75 @@ export default function DetalheOcorrencia() {
               </div>
 
               <div className="detalhe-coluna">
+                {porValidar && (
+                  <div className="cartao">
+                    <h3 className="cartao-titulo">Decisão de validação</h3>
+
+                    <div className="campo">
+                      <label htmlFor="categoria-validacao">
+                        Confirmar / corrigir categoria
+                      </label>
+                      <select
+                        id="categoria-validacao"
+                        value={idCategoria}
+                        onChange={(e) => setIdCategoria(e.target.value)}
+                      >
+                        {categorias.map((c) => (
+                          <option key={c.id_categoria} value={c.id_categoria}>
+                            {c.tipo_categoria}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="campo">
+                      <label>Prioridade</label>
+                      <div className="opcoes-gravidade">
+                        {prioridades.map((p) => (
+                          <button
+                            key={p.id_prioridade}
+                            type="button"
+                            className={`opcao ${
+                              idPrioridade === String(p.id_prioridade)
+                                ? "opcao-ativa"
+                                : ""
+                            }`}
+                            onClick={() =>
+                              setIdPrioridade(String(p.id_prioridade))
+                            }
+                          >
+                            {capitalizar(p.tipo_prioridade)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {erroDecisao && <p className="auth-erro">{erroDecisao}</p>}
+
+                    <div className="acoes-form">
+                      <button
+                        type="button"
+                        className="btn-auth btn-pequeno"
+                        style={BOTAO_DECISAO}
+                        disabled={aSubmeter || !idCategoria || !idPrioridade}
+                        onClick={() => decidir("validar")}
+                      >
+                        <FiCheck />
+                        Validar e encaminhar
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-cancelar"
+                        style={BOTAO_DECISAO}
+                        disabled={aSubmeter}
+                        onClick={() => decidir("rejeitar")}
+                      >
+                        Rejeitar
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="cartao">
                   <h3 className="cartao-titulo">Histórico da ocorrência</h3>
 
