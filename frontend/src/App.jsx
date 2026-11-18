@@ -9,6 +9,7 @@ import DetalheOcorrencia from "./pages/DetalheOcorrencia.jsx";
 import OcorrenciasAdmin from "./pages/OcorrenciasAdmin.jsx";
 import DetalheOcorrenciaManagement from "./pages/DetalheOcorrenciaManagement.jsx";
 import OcorrenciasFuncionario from "./pages/OcorrenciasFuncionario.jsx";
+import DetalheOcorrenciaFuncionario from "./pages/DetalheOcorrenciaFuncionario.jsx";
 
 export default function App() {
   return (
@@ -35,7 +36,14 @@ export default function App() {
 
       <Route>
         <Route element={<RotaProtegida tipo="funcionario" />} />
-        <Route path="" element={<OcorrenciasFuncionario />} />
+        <Route
+          path="/funcionario/ocorrencias"
+          element={<OcorrenciasFuncionario />}
+        />
+        <Route
+          path="/funcionario/Ocorrencia/:id"
+          element={<DetalheOcorrenciaFuncionario />}
+        />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

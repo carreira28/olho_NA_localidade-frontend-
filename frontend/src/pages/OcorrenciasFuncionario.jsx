@@ -254,7 +254,9 @@ export default function OcorrenciasAdmin() {
                                 : "btn-secundario"
                             }
                             onClick={() =>
-                              navigate(`/admin/Ocorrencia/${p.id_problema}`)
+                              navigate(
+                                `/funcionario/Ocorrencia/${p.id_problema}`,
+                              )
                             }
                           >
                             {porValidar ? "Validar" : "Ver detalhes"}

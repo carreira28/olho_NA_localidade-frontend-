@@ -1,7 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { terminarSessao } from "../utils/sessao.js";
-import { TiThListOutline } from "react-icons/ti";
-import { FiPlusCircle } from "react-icons/fi";
+import { SiGoogleforms } from "react-icons/si";
 import { IoIosLogOut } from "react-icons/io";
 
 const classeMenu = ({ isActive }) =>
@@ -15,16 +14,10 @@ export default function BarraLateral() {
       <div>
         <p className="painel-marca">Olho na localidade</p>
         <p className="painel-area">Funcionario</p>
-        //!editar isto depois
         <nav>
-          <NavLink to="/OcorrenciasCidadao" end className={classeMenu}>
-            <TiThListOutline />
-            <span>As minhas ocorrências</span>
-          </NavLink>
-
-          <NavLink to="/reportar" className={classeMenu}>
-            <FiPlusCircle />
-            <span>Reportar ocorrência</span>
+          <NavLink to="/funcionario/ocorrencias" end className={classeMenu}>
+            <SiGoogleforms />
+            <span>Ocorrências do departamento</span>
           </NavLink>
         </nav>
       </div>
