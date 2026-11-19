@@ -5,6 +5,7 @@ import { api } from "../api.js";
 import BarraLateralAdmin from "../components/BarraLateralAdmin.jsx";
 import BarraTopo from "../components/BarraTopo.jsx";
 import { lerUtilizador } from "../utils/sessao.js";
+import MapaEscolha from "../components/MapaEscolha.jsx";
 
 const TIPO_VALIDACAO = "VALIDACAO";
 const TIPO_RESOLUCAO = "RESOLUCAO";
@@ -45,12 +46,6 @@ const formatarDataHora = (valor) => {
   const d = new Date(valor);
   const data = d.toLocaleDateString("pt-PT");
   return `${data}`;
-};
-
-const BOTAO_DECISAO = {
-  padding: "0.45rem 0.9rem",
-  fontSize: "0.82rem",
-  gap: "0.35rem",
 };
 
 const capitalizar = (t = "") =>
@@ -94,6 +89,9 @@ export default function DetalheOcorrencia() {
   const [prioridades, setPrioridades] = useState([]);
   const [idCategoria, setIdCategoria] = useState("");
   const [idPrioridade, setIdPrioridade] = useState("");
+  const [aEditarLocal, setAEditarLocal] = useState(false);
+  const [novaPosicao, setNovaPosicao] = useState(null);
+  const [aGuardar, setAGuardar] = useState(false);
   const [aSubmeter, setASubmeter] = useState(false);
   const [erroDecisao, setErroDecisao] = useState("");
 
@@ -109,9 +107,12 @@ export default function DetalheOcorrencia() {
 
   useEffect(() => {
     carregar();
-    api("/api/categorias").then(setCategorias).catch(() => {});
-    api("/api/prioridades").then(setPrioridades).catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    api("/api/categorias")
+      .then(setCategorias)
+      .catch(() => {});
+    api("/api/prioridades")
+      .then(setPrioridades)
+      .catch(() => {});
   }, [id]);
 
   const decidir = async (acao) => {
@@ -136,6 +137,34 @@ export default function DetalheOcorrencia() {
       setASubmeter(false);
     }
   };
+  async function guardarLocalizacao() {
+    if (!novaPosicao) return setErroDecisao("Assinala o local no mapa.");
+
+    setAGuardar(true);
+    setErroDecisao("");
+    try {
+      const atualizado = await api(`/api/problemas/${id}/localizacao`, {
+        method: "PATCH",
+        body: { latitude: novaPosicao.lat, longitude: novaPosicao.lng },
+      });
+      setProblema({
+        ...problema,
+        latitude: atualizado.latitude,
+        longitude: atualizado.longitude,
+      });
+      setAEditarLocal(false);
+      setNovaPosicao(null);
+    } catch (e) {
+      setErroDecisao(e.message);
+    } finally {
+      setAGuardar(false);
+    }
+  }
+  function cancelarEdicao() {
+    setAEditarLocal(false);
+    setNovaPosicao(null);
+    setErroDecisao("");
+  }
 
   const validacao = problema
     ? (estadoAtual(problema.historicoEstados, TIPO_VALIDACAO) ?? "Pendente")
@@ -231,19 +260,71 @@ export default function DetalheOcorrencia() {
 
                 <div className="cartao">
                   <h3 className="cartao-titulo">Localização</h3>
-                  {temLocalizacao ? (
+
+                  {aEditarLocal ? (
                     <>
-                      <Mapa
-                        className="mapa"
-                        latitude={problema.latitude}
-                        longitude={problema.longitude}
-                      />
-                      <p className="detalhe-coords">
-                        {problema.latitude}, {problema.longitude}
+                      <p className="painel-sub">
+                        Assinala com um ponto no mapa.
                       </p>
+                      <MapaEscolha
+                        posicao={novaPosicao}
+                        onEscolher={setNovaPosicao}
+                        centro={
+                          temLocalizacao
+                            ? [problema.latitude, problema.longitude]
+                            : undefined
+                        }
+                      />
+                      {novaPosicao && (
+                        <p className="detalhe-coords">
+                          {novaPosicao.lat.toFixed(6)},{" "}
+                          {novaPosicao.lng.toFixed(6)}
+                        </p>
+                      )}
+                      {erroDecisao && (
+                        <p className="auth-erro">{erroDecisao}</p>
+                      )}
+                      <div className="acoes-form">
+                        <button
+                          className="btn-secundario"
+                          onClick={cancelarEdicao}
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          className="btn-auth btn-pequeno"
+                          onClick={guardarLocalizacao}
+                          disabled={aGuardar || !novaPosicao}
+                        >
+                          {aGuardar ? "A guardar…" : "Guardar localização"}
+                        </button>
+                      </div>
                     </>
                   ) : (
-                    <p className="painel-sub">Sem localização registada.</p>
+                    <>
+                      {temLocalizacao ? (
+                        <>
+                          <Mapa
+                            latitude={problema.latitude}
+                            longitude={problema.longitude}
+                          />
+                          <p className="detalhe-coords">
+                            {problema.latitude}, {problema.longitude}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="painel-sub">Sem localização registada.</p>
+                      )}
+
+                      {porValidar && !temLocalizacao && (
+                        <button
+                          className="btn-auth btn-pequeno"
+                          onClick={() => setAEditarLocal(true)}
+                        >
+                          Adicionar localização
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -298,7 +379,6 @@ export default function DetalheOcorrencia() {
                       <button
                         type="button"
                         className="btn-auth btn-pequeno"
-                        style={BOTAO_DECISAO}
                         disabled={aSubmeter || !idCategoria || !idPrioridade}
                         onClick={() => decidir("validar")}
                       >
@@ -308,7 +388,6 @@ export default function DetalheOcorrencia() {
                       <button
                         type="button"
                         className="btn-cancelar"
-                        style={BOTAO_DECISAO}
                         disabled={aSubmeter}
                         onClick={() => decidir("rejeitar")}
                       >

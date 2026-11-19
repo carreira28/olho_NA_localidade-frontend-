@@ -640,6 +640,10 @@ td small {
 .filtros-4 {
   grid-template-columns: repeat(4, 1fr);
 }
+
+.filtros-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
 .filtros input[type="date"] {
   width: 100%;
   padding: 0.7rem 0.8rem;

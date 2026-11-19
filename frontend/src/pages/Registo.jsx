@@ -12,8 +12,22 @@ export default function Registo() {
   async function handleSubmit(e) {
     e.preventDefault();
 
+    setErro("");
+    if (nome.trim().length < 3) {
+      return setErro("O nome tem de ter mais de 3 caracters!");
+    }
+
+    if (email.length < 5) {
+      return setErro("O email tem de ter mais de 5 caracteres!");
+    }
+
+    const passwordValida = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/;
+
+    if (!passwordValida.test(password)) {
+      return setErro("A password deve conter pelo menos uma letra e um número");
+    }
+
     try {
-      setErro("");
       await api("/auth/signup", {
         method: "POST",
         body: { nome, email, password },
