@@ -22,7 +22,7 @@ export default function BarraLateral() {
             <span>Todas as Ocorrencias</span>
           </NavLink>
 
-          <NavLink to="/" className={classeMenu}>
+          <NavLink to="/admin/categorias" className={classeMenu}>
             <FiPlusCircle />
             <span>Categorias</span>
           </NavLink>

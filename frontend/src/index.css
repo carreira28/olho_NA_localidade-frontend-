@@ -654,3 +654,10 @@ td small {
   color: var(--azul-escuro);
   background: white;
 }
+
+.layout-duas-colunas {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}

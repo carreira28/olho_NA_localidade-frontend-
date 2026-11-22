@@ -10,6 +10,7 @@ import OcorrenciasAdmin from "./pages/OcorrenciasAdmin.jsx";
 import DetalheOcorrenciaManagement from "./pages/DetalheOcorrenciaManagement.jsx";
 import OcorrenciasFuncionario from "./pages/OcorrenciasFuncionario.jsx";
 import DetalheOcorrenciaFuncionario from "./pages/DetalheOcorrenciaFuncionario.jsx";
+import CategoriasAdmin from "./pages/CategoriasAdmin.jsx";
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
           path="/admin/Ocorrencia/:id"
           element={<DetalheOcorrenciaManagement />}
         />
+        <Route path="/admin/categorias" element={<CategoriasAdmin />} />
       </Route>
 
       <Route>
