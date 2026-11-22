@@ -11,6 +11,7 @@ export function obterPerfil(utilizador) {
   if (!utilizador) return null;
   if (utilizador.tipo === "cidadao") return "cidadao";
   if (utilizador.perfil === "ADMINISTRADOR") return "administrador";
+  if (utilizador.perfil === "SUPER ADMIN") return "administrador";
   if (utilizador.perfil === "FUNCIONARIO MUNICIPAL") return "funcionario";
   return null;
 }
