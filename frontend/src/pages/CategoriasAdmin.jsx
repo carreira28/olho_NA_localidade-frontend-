@@ -6,8 +6,6 @@ import BarraTopo from "../components/BarraTopo.jsx";
 const MODO_CRIAR = "criar";
 const MODO_EDITAR = "editar";
 
-const FORM_VAZIO = { tipo_categoria: "", id_departamento: "" };
-
 export default function CategoriasAdmin() {
   const [categorias, setCategorias] = useState([]);
   const [pesquisa, setPesquisa] = useState("");
@@ -17,7 +15,7 @@ export default function CategoriasAdmin() {
 
   const [modo, setModo] = useState(null);
   const [selecionada, setSelecionada] = useState(null);
-  const [form, setForm] = useState(FORM_VAZIO);
+  const [form, setForm] = useState("");
   const [aGuardar, setAGuardar] = useState(false);
   const [erroForm, setErroForm] = useState("");
 
@@ -50,7 +48,7 @@ export default function CategoriasAdmin() {
   const abrirCriar = () => {
     setModo(MODO_CRIAR);
     setSelecionada(null);
-    setForm(FORM_VAZIO);
+    setForm("");
     setErroForm("");
   };
 
@@ -67,7 +65,7 @@ export default function CategoriasAdmin() {
   const fechar = () => {
     setModo(null);
     setSelecionada(null);
-    setForm(FORM_VAZIO);
+    setForm("");
     setErroForm("");
   };
 
