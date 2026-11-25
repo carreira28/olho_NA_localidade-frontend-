@@ -3,6 +3,8 @@ import { api } from "../api.js";
 import BarraLateralAdmin from "../components/BarraLateralAdmin.jsx";
 import BarraTopo from "../components/BarraTopo.jsx";
 
+const FORM_VAZIO = { tipo_categoria: "", id_departamento: "" };
+
 const MODO_CRIAR = "criar";
 const MODO_EDITAR = "editar";
 
@@ -15,7 +17,7 @@ export default function CategoriasAdmin() {
 
   const [modo, setModo] = useState(null);
   const [selecionada, setSelecionada] = useState(null);
-  const [form, setForm] = useState("");
+  const [form, setForm] = useState(FORM_VAZIO);
   const [aGuardar, setAGuardar] = useState(false);
   const [erroForm, setErroForm] = useState("");
 
@@ -48,7 +50,7 @@ export default function CategoriasAdmin() {
   const abrirCriar = () => {
     setModo(MODO_CRIAR);
     setSelecionada(null);
-    setForm("");
+    setForm(FORM_VAZIO);
     setErroForm("");
   };
 
