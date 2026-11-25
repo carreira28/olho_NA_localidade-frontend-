@@ -184,7 +184,6 @@ export default function OcorrenciasFuncionario() {
                   <tr>
                     <th>Ocorrências</th>
                     <th>Submissão</th>
-                    <th>Validação</th>
                     <th>Prioridade</th>
                     <th>Resolução</th>
                     <th>Ação</th>
@@ -192,12 +191,12 @@ export default function OcorrenciasFuncionario() {
                 </thead>
                 <tbody>
                   {visiveis.map((p) => {
-                    const validacao =
-                      estadoAtual(p.historicoEstados, TIPO_VALIDACAO) ?? "—";
                     const resolucao =
                       estadoAtual(p.historicoEstados, TIPO_RESOLUCAO) ??
                       "Não iniciada";
-                    const porValidar = validacao === "PENDENTE";
+                    const porValidar =
+                      estadoAtual(p.historicoEstados, TIPO_VALIDACAO) ===
+                      "PENDENTE";
 
                     return (
                       <tr key={p.id_problema}>
@@ -208,9 +207,6 @@ export default function OcorrenciasFuncionario() {
                         </td>
                         <td>
                           <small>{formatarData(p.data_criacao)}</small>
-                        </td>
-                        <td>
-                          <Chip texto={validacao} />
                         </td>
                         <td>
                           <ChipPrioridade prioridade={p.prioridade} />

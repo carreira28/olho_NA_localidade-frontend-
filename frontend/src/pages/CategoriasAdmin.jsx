@@ -246,7 +246,7 @@ export default function CategoriasAdmin() {
                     </button>
                     <button
                       type="button"
-                      className="btn-perigo btn-pequeno"
+                      className="btn-cancelar"
                       onClick={fechar}
                       disabled={aGuardar}
                     >
