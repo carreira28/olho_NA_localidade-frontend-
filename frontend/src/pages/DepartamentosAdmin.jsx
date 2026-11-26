@@ -3,14 +3,11 @@ import { api } from "../api.js";
 import BarraLateralAdmin from "../components/BarraLateralAdmin.jsx";
 import BarraTopo from "../components/BarraTopo.jsx";
 
-const FORM_VAZIO = { nome_departamento: "", id_categoria: "" };
-
 const MODO_CRIAR = "criar";
 const MODO_EDITAR = "editar";
 
 export default function DepartamentosAdmin() {
   const [departamentos, setDepartamentos] = useState([]);
-  const [categorias, setCategorias] = useState([]);
   const [pesquisa, setPesquisa] = useState("");
 
   const [aCarregar, setACarregar] = useState(true);
@@ -18,18 +15,18 @@ export default function DepartamentosAdmin() {
 
   const [modo, setModo] = useState(MODO_CRIAR);
   const [selecionado, setSelecionado] = useState(null);
-  const [form, setForm] = useState(FORM_VAZIO);
+  const [nome, setNome] = useState("");
   const [aGuardar, setAGuardar] = useState(false);
   const [erroForm, setErroForm] = useState("");
 
   const carregar = () =>
-    Promise.all([
-      api("/gestaoDepartamento/departamentos"),
-      api("/gestaoCategoria/categorias"),
-    ]).then(([deps, cats]) => {
-      setDepartamentos(deps);
-      setCategorias(cats);
-    });
+    api("/gestaoDepartamento/departamentos").then((deps) =>
+      setDepartamentos(
+        [...deps].sort((a, b) =>
+          a.nome_departamento.localeCompare(b.nome_departamento),
+        ),
+      ),
+    );
 
   useEffect(() => {
     carregar()
@@ -37,52 +34,25 @@ export default function DepartamentosAdmin() {
       .finally(() => setACarregar(false));
   }, []);
 
-  // Uma linha por categoria (como no design); departamentos sem categorias
-  // aparecem com "—" para poderem ser editados.
-  const linhas = useMemo(
-    () =>
-      departamentos.flatMap((d) =>
-        d.categorias.length > 0
-          ? d.categorias.map((c) => ({
-              chave: `${d.id_departamento}-${c.id_categoria}`,
-              departamento: d,
-              categoria: c,
-            }))
-          : [
-              {
-                chave: `${d.id_departamento}-sem-categoria`,
-                departamento: d,
-                categoria: null,
-              },
-            ],
-      ),
-    [departamentos],
-  );
-
   const visiveis = useMemo(() => {
     const termo = pesquisa.trim().toLowerCase();
-    if (!termo) return linhas;
-    return linhas.filter(
-      (l) =>
-        l.departamento.nome_departamento.toLowerCase().includes(termo) ||
-        l.categoria?.tipo_categoria.toLowerCase().includes(termo),
+    if (!termo) return departamentos;
+    return departamentos.filter((d) =>
+      d.nome_departamento.toLowerCase().includes(termo),
     );
-  }, [linhas, pesquisa]);
+  }, [departamentos, pesquisa]);
 
-  const abrirEditar = (linha) => {
+  const abrirEditar = (departamento) => {
     setModo(MODO_EDITAR);
-    setSelecionado(linha.departamento);
-    setForm({
-      nome_departamento: linha.departamento.nome_departamento,
-      id_categoria: linha.categoria ? String(linha.categoria.id_categoria) : "",
-    });
+    setSelecionado(departamento);
+    setNome(departamento.nome_departamento);
     setErroForm("");
   };
 
   const cancelar = () => {
     setModo(MODO_CRIAR);
     setSelecionado(null);
-    setForm(FORM_VAZIO);
+    setNome("");
     setErroForm("");
   };
 
@@ -90,15 +60,12 @@ export default function DepartamentosAdmin() {
     e.preventDefault();
     setErroForm("");
 
-    if (!form.nome_departamento.trim()) {
+    if (!nome.trim()) {
       setErroForm("Indica o nome do departamento.");
       return;
     }
 
-    const corpo = {
-      nome_departamento: form.nome_departamento.trim(),
-      id_categoria: form.id_categoria ? Number(form.id_categoria) : null,
-    };
+    const corpo = { nome_departamento: nome.trim() };
 
     setAGuardar(true);
     try {
@@ -108,12 +75,11 @@ export default function DepartamentosAdmin() {
           body: corpo,
         });
       } else {
-        await api(`/gestaoDepartamento/departamento/${selecionado.id_departamento}`, {
-          method: "PATCH",
-          body: corpo,
-        });
+        await api(
+          `/gestaoDepartamento/departamento/${selecionado.id_departamento}`,
+          { method: "PATCH", body: corpo },
+        );
       }
-      // Recarrega tudo: associar uma categoria move-a de outro departamento
       await carregar();
       cancelar();
     } catch (err) {
@@ -142,7 +108,7 @@ export default function DepartamentosAdmin() {
                 <input
                   id="f-pesquisa"
                   type="text"
-                  placeholder="Departamento ou categoria"
+                  placeholder="Departamento"
                   value={pesquisa}
                   onChange={(e) => setPesquisa(e.target.value)}
                 />
@@ -158,23 +124,21 @@ export default function DepartamentosAdmin() {
                 <table>
                   <thead>
                     <tr>
-                      <th>Categoria</th>
                       <th>Departamento</th>
                       <th>Ação</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {visiveis.map((l) => (
-                      <tr key={l.chave}>
-                        <td>{l.categoria?.tipo_categoria ?? "—"}</td>
+                    {visiveis.map((d) => (
+                      <tr key={d.id_departamento}>
                         <td>
-                          <strong>{l.departamento.nome_departamento}</strong>
+                          <strong>{d.nome_departamento}</strong>
                         </td>
                         <td>
                           <button
                             type="button"
                             className="btn-secundario"
-                            onClick={() => abrirEditar(l)}
+                            onClick={() => abrirEditar(d)}
                           >
                             Editar
                           </button>
@@ -199,29 +163,9 @@ export default function DepartamentosAdmin() {
                   <input
                     id="d-nome"
                     type="text"
-                    value={form.nome_departamento}
-                    onChange={(e) =>
-                      setForm({ ...form, nome_departamento: e.target.value })
-                    }
+                    value={nome}
+                    onChange={(e) => setNome(e.target.value)}
                   />
-                </div>
-
-                <div className="campo">
-                  <label htmlFor="d-cat">Categoria</label>
-                  <select
-                    id="d-cat"
-                    value={form.id_categoria}
-                    onChange={(e) =>
-                      setForm({ ...form, id_categoria: e.target.value })
-                    }
-                  >
-                    <option value="">Seleciona uma categoria</option>
-                    {categorias.map((c) => (
-                      <option key={c.id_categoria} value={c.id_categoria}>
-                        {c.tipo_categoria}
-                      </option>
-                    ))}
-                  </select>
                 </div>
 
                 {erroForm && <p className="auth-erro">{erroForm}</p>}
