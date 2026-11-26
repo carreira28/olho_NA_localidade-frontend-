@@ -67,10 +67,9 @@ export default function CategoriasAdmin() {
   const fechar = () => {
     setModo(null);
     setSelecionada(null);
-    setForm("");
+    setForm(FORM_VAZIO);
     setErroForm("");
   };
-
   const guardar = async (e) => {
     e.preventDefault();
     setErroForm("");

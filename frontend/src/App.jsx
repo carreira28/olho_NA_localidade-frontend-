@@ -11,6 +11,7 @@ import DetalheOcorrenciaManagement from "./pages/DetalheOcorrenciaManagement.jsx
 import OcorrenciasFuncionario from "./pages/OcorrenciasFuncionario.jsx";
 import DetalheOcorrenciaFuncionario from "./pages/DetalheOcorrenciaFuncionario.jsx";
 import CategoriasAdmin from "./pages/CategoriasAdmin.jsx";
+import DepartamentosAdmin from "./pages/DepartamentosAdmin.jsx";
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
       <Route>
         <Route element={<RotaProtegida tipo="administrador" />} />
         <Route path="/admin/Ocorrencias" element={<OcorrenciasAdmin />} />
+        <Route path="/admin/departamentos" element={<DepartamentosAdmin />} />
         <Route
           path="/admin/Ocorrencia/:id"
           element={<DetalheOcorrenciaManagement />}
@@ -49,5 +51,7 @@ export default function App() {
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
+
+    
   );
 }

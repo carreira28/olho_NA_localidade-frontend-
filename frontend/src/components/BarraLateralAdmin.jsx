@@ -32,7 +32,7 @@ export default function BarraLateral() {
             <span>Utilizadores</span>
           </NavLink>
 
-          <NavLink to="/" className={classeMenu}>
+          <NavLink to="/admin/departamentos" className={classeMenu}>
             <FiPlusCircle />
             <span>Departamentos</span>
           </NavLink>
